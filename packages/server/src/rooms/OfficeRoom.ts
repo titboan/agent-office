@@ -223,7 +223,7 @@ export class OfficeRoom extends Room<OfficeState> {
         });
 
         // Start Simulation Loop
-        this.setSimulationInterval((delta) => this.update(delta), 999999999);
+        this.setSimulationInterval((delta) => this.update(delta), 100);
     }
 
     private autoAssignAgent(): string {
@@ -243,6 +243,8 @@ export class OfficeRoom extends Room<OfficeState> {
 
         // ─── AGENT THINK CYCLE ───
         this.coreAgents.forEach((coreAgent, id) => {
+            // Думаем только если есть задача
+            if (!coreAgent.currentTask) return;
             if (!this.thinkingLocks.get(id)) {
                 this.thinkingLocks.set(id, true);
 
