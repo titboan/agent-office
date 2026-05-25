@@ -94,7 +94,7 @@ export class OfficeRoom extends Room<OfficeState> {
                 id, name, role, avatar: 'sprite.png',
                 inference: {
                     provider: 'ollama',
-                    model: 'llama3.2:latest',
+                    model: 'claude-sonnet-4-20250514',
                     systemPrompt: `Ты ${name}, ${role} в виртуальном офисе. Работай над задачами, общайся с коллегами и помогай команде. Отвечай кратко и по делу.`,
                 },
                 personality: {
@@ -347,7 +347,7 @@ export class OfficeRoom extends Room<OfficeState> {
                                     id: hireId, name: hireName, role: hireRole, avatar: 'sprite.png',
                                     inference: {
                                         provider: 'ollama',
-                                        model: 'llama3.2:latest',
+                                        model: 'claude-sonnet-4-20250514',
                                         systemPrompt: `You are ${hireName}, a ${hireRole} who just joined the team at a virtual office. You were hired by ${coreAgent.config.name}. Be enthusiastic, helpful, and eager to learn. Introduce yourself to your colleagues. Keep thoughts SHORT.`,
                                     },
                                     personality: {
