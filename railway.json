@@ -5,7 +5,6 @@
   },
   "deploy": {
     "startCommand": "npm run start --workspace=@agent-office/server",
-    "healthcheckPath": "/health",
     "restartPolicyType": "ON_FAILURE"
   }
 }
