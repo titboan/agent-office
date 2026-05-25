@@ -6,6 +6,15 @@ import { OfficeRoom } from './rooms/OfficeRoom';
 // Setup Express
 const app = express();
 app.use(express.json());
+import path from 'path';
+
+// Отдаём собранный UI
+app.use(express.static(path.join(__dirname, '../../ui/dist')));
+
+// Главная страница → UI
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../ui/dist/index.html'));
+});
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
