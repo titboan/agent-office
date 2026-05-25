@@ -1,7 +1,7 @@
 import { Room, Client } from 'colyseus';
 import { OfficeState } from '../schema/OfficeState';
 import { Agent, Office, OfficeConfig, ConversationMessage } from '@agent-office/core';
-import { OllamaAdapter } from '@agent-office/adapters';
+import { OpenAICompatibleAdapter } from '@agent-office/adapters';
 import { ToolExecutor } from '../tools/ToolExecutor';
 import { MemoryStore } from '../memory/MemoryStore';
 
@@ -30,7 +30,10 @@ export class OfficeRoom extends Room<OfficeState> {
     private demoTickCount = 0;
     private coreAgents: Map<string, Agent> = new Map();
     private thinkingLocks: Map<string, boolean> = new Map();
-    private ollamaAdapter = new OllamaAdapter('http://localhost:11434');
+    private ollamaAdapter = new OpenAICompatibleAdapter(
+    'https://api.anthropic.com',
+    process.env.ANTHROPIC_API_KEY || '',
+    'claude');
     private hireCount = 0; // Counter for generating unique IDs
     private toolExecutor = new ToolExecutor();
     private memoryStore = new MemoryStore();
@@ -92,7 +95,7 @@ export class OfficeRoom extends Room<OfficeState> {
                 inference: {
                     provider: 'ollama',
                     model: 'llama3.2:latest',
-                    systemPrompt: `You are ${name}, a ${role} in a virtual office. Be social, do your work, and collaborate with colleagues. Keep thoughts SHORT.`,
+                    systemPrompt: `Ты ${name}, ${role} в виртуальном офисе. Работай над задачами, общайся с коллегами и помогай команде. Отвечай кратко и по делу.`,
                 },
                 personality: {
                     traits: { openness: 0.8, conscientiousness: 0.9, extraversion: 0.6, agreeableness: 0.7, neuroticism: 0.1 },
@@ -124,8 +127,12 @@ export class OfficeRoom extends Room<OfficeState> {
             this.thinkingLocks.set(id, false);
         };
 
-        await setupCoreAgent('alice', 'Alice', 'Engineer', 10, 10);
-        await setupCoreAgent('bob', 'Bob', 'Product Manager', 20, 15);
+        await setupCoreAgent('marta', 'Марта', 'Координатор', 10, 10);
+        await setupCoreAgent('dev', 'Кевин', 'Разработчик', 20, 15);
+        await setupCoreAgent('seeker', 'Каспер', 'Исследователь', 30, 10);
+        await setupCoreAgent('analyst', 'Питер', 'Аналитик', 10, 25);
+        await setupCoreAgent('author', 'Элина', 'Копирайтер', 20, 25);
+        await setupCoreAgent('planner', 'Алекс', 'Планировщик', 30, 25);
         this.rebuildRelationshipGraph();
         const savedLayout = await this.memoryStore.loadLayout('default');
         this.currentLayout = Array.isArray(savedLayout) ? savedLayout : [];
