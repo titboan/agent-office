@@ -6,6 +6,9 @@ import { OfficeRoom } from './rooms/OfficeRoom';
 // Setup Express
 const app = express();
 app.use(express.json());
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 // Basic REST API for Office Management
 app.get('/api/offices', (req, res) => {
