@@ -94,7 +94,7 @@ export class OfficeRoom extends Room<OfficeState> {
                 id, name, role, avatar: 'sprite.png',
                 inference: {
                     provider: 'anthropic',
-                    model: 'claude-sonnet-4-20250514',
+                    model: 'claude-sonnet-4-5',
                     systemPrompt: `Ты ${name}, ${role} в виртуальном офисе. Работай над задачами, общайся с коллегами и помогай команде. Отвечай кратко и по делу.`,
                 },
                 personality: {
@@ -347,7 +347,7 @@ export class OfficeRoom extends Room<OfficeState> {
                                     id: hireId, name: hireName, role: hireRole, avatar: 'sprite.png',
                                     inference: {
                                                 provider: 'anthropic',
-                                                model: 'claude-sonnet-4-20250514',
+                                                model: 'claude-sonnet-4-5',
                                                 systemPrompt: `Ты ${hireName}, ${hireRole} который только что присоединился к команде. Тебя нанял ${coreAgent.config.name}. Будь энергичным и полезным. Отвечай кратко.`,
                                     },
                                     personality: {
