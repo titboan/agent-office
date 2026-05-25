@@ -25,7 +25,7 @@ function resolveWsEndpoint(): string {
     if (globalEndpoint && globalEndpoint.trim()) return globalEndpoint.trim();
     if (typeof window !== 'undefined') {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        return `${protocol}//${window.location.hostname}:3000`;
+        return `${protocol}//${window.location.host}`;
     }
     return 'ws://localhost:3000';
 }
