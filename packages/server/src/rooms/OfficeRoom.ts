@@ -93,7 +93,7 @@ export class OfficeRoom extends Room<OfficeState> {
             const coreAgent = new Agent({
                 id, name, role, avatar: 'sprite.png',
                 inference: {
-                    provider: 'claude',
+                    provider: 'anthropic',
                     model: 'claude-sonnet-4-20250514',
                     systemPrompt: `Ты ${name}, ${role} в виртуальном офисе. Работай над задачами, общайся с коллегами и помогай команде. Отвечай кратко и по делу.`,
                 },
@@ -346,7 +346,7 @@ export class OfficeRoom extends Room<OfficeState> {
                                 const hireAgent = new Agent({
                                     id: hireId, name: hireName, role: hireRole, avatar: 'sprite.png',
                                     inference: {
-                                                provider: 'claude',
+                                                provider: 'anthropic',
                                                 model: 'claude-sonnet-4-20250514',
                                                 systemPrompt: `Ты ${hireName}, ${hireRole} который только что присоединился к команде. Тебя нанял ${coreAgent.config.name}. Будь энергичным и полезным. Отвечай кратко.`,
                                     },
