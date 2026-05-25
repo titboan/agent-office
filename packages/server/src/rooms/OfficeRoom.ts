@@ -173,6 +173,27 @@ export class OfficeRoom extends Room<OfficeState> {
                 agent.currentTask = title;
                 agentState.currentTask = title;
                 agentState.action = 'work';
+                // Запускаем думание только для этого агента
+                const agentToThink = this.coreAgents.get(targetId);
+                if (agentToThink) {
+                agentToThink.think({
+                    time: this.state.officeTime,
+                    location: `${agentState.x},${agentState.y}`,
+                    nearbyAgents: [],
+                    currentTask: title,
+                    recentMessages: [],
+                    memories: agentToThink.getRecentMemories(3)
+                    }).then(async (decision) => {
+                agentState.thought = decision.thought || '';
+                agentState.action = decision.action;
+        if (decision.message) {
+            this.broadcast('chat', {
+                sender: agentState.name,
+                text: decision.message
+            });
+        }
+    }).catch(err => console.error(`Task think error:`, err));
+}
 
                 // Persist task
                 this.memoryStore.createTask(title, targetId);
@@ -202,7 +223,7 @@ export class OfficeRoom extends Room<OfficeState> {
         });
 
         // Start Simulation Loop
-        this.setSimulationInterval((delta) => this.update(delta), 100);
+        this.setSimulationInterval((delta) => this.update(delta), 999999999);
     }
 
     private autoAssignAgent(): string {
@@ -210,7 +231,7 @@ export class OfficeRoom extends Room<OfficeState> {
         for (const [id, agent] of this.coreAgents) {
             if (!agent.currentTask) return id;
         }
-        return 'alice'; // fallback
+        return 'marta'; // fallback
     }
 
     async update(delta: number) {
