@@ -7,7 +7,12 @@ COPY tsconfig.base.json ./
 COPY packages/ ./packages/
 
 RUN npm install
-RUN npm run build
+
+# Собираем в правильном порядке
+RUN npm run build --workspace=@agent-office/core
+RUN npm run build --workspace=@agent-office/adapters
+RUN npm run build --workspace=@agent-office/server
+RUN npm run build --workspace=@agent-office/ui
 
 EXPOSE 3000
 
