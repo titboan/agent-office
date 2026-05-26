@@ -95,9 +95,17 @@ export class OfficeRoom extends Room<OfficeState> {
                 inference: {
                     provider: 'anthropic',
                     model: 'claude-sonnet-4-5',
-                    systemPrompt: `Ты ${name}, ${role} в виртуальном офисе. Работай над задачами, общайся с коллегами и помогай команде. Отвечай кратко и по делу.`,
-                },
-                personality: {
+                    systemPrompt: `Ты ${name}, ${role} в виртуальном офисе.
+                        ${name === 'Марта' ? `Твоя роль — КООРДИНАТОР. Ты НЕ выполняешь задачи сама.
+                            Когда получаешь задачу — анализируй её и немедленно делегируй нужному агенту:
+                            - Кевин — разработка, код, сайты
+                            - Каспер — поиск информации, исследования  
+                            - Питер — анализ данных, отчёты
+                            - Элина — тексты, статьи, письма
+                            - Алекс — планирование, расписание
+                            Используй инструмент create_task чтобы назначить задачу агенту. Отвечай кратко.` 
+                            : `Работай над задачами, общайся с коллегами и помогай команде. Отвечай кратко и по делу.`}`,
+                    personality: {
                     traits: { openness: 0.8, conscientiousness: 0.9, extraversion: 0.6, agreeableness: 0.7, neuroticism: 0.1 },
                     communicationStyle: role === 'Engineer' ? 'technical' : 'casual',
                     workHours: { start: '09:00', end: '17:00' },
