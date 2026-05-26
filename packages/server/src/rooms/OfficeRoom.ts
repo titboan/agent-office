@@ -804,12 +804,23 @@ get autoDispose() { return false; }
 
     async onDispose() {
     console.log("room", this.roomId, "disposing... saving memories");
-    // Не удаляем activeRoom — пересоздаём при необходимости
+    OfficeRoom.activeRoom = null;
     for (const [id, agent] of this.coreAgents) {
         await this.memoryStore.saveMemories(id, agent.memories, this.sessionId);
-       }
-    await this.memoryStore.close();
     }
+    await this.memoryStore.close();
+    // Пересоздаём комнату через 3 секунды
+    setTimeout(async () => {
+        try {
+            const { matchMaker } = require('colyseus');
+            await matchMaker.createRoom('office', { name: 'Главный офис' });
+            console.log(`[Server] Office room recreated after dispose`);
+        } catch (e) {
+                    console.error('[Server] Recreate failed:', e);
+                }
+            }, 3000);
+        }
+
 
     public assignTask(title: string, agentId?: string) {
         const targetId = agentId || this.autoAssignAgent();
