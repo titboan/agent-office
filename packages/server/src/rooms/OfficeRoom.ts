@@ -26,7 +26,7 @@ export class OfficeRoom extends Room<OfficeState> {
     private static activeRoom: OfficeRoom | null = null;
 
     maxClients = 100;
-    autoDispose = false; // ← Свойство класса, а не геттер: instance property перекрывает this.autoDispose=true из базового Room
+    get autoDispose() { return false; }
 
 
     private office!: Office;
