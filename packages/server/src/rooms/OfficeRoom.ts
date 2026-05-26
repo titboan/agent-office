@@ -26,11 +26,23 @@ export class OfficeRoom extends Room<OfficeState> {
     private static activeRoom: OfficeRoom | null = null;
 
     maxClients = 100;
-    // Оба accessor нужны: в JS определение только getter в subclass
-    // полностью стирает setter родителя с прототипа.
-    // Без setter Colyseus не может выставить _autoDispose и комната удаляется.
-    get autoDispose() { return false; }
-    set autoDispose(_: boolean) { /* ignore — комната живёт вечно */ }
+
+    // ─── PERMANENT ROOM FIX ───────────────────────────────────────────────────
+    // В Colyseus 0.15 поле #_autoDispose объявлено как hard-private (#).
+    // Из subclass к нему нельзя обратиться вообще — getter/setter бесполезны,
+    // потому что resetAutoDisposeTimeout() читает #_autoDispose НАПРЯМУЮ, минуя геттер.
+    //
+    // Цепочка удаления:
+    //   constructor → resetAutoDisposeTimeout(seatReservationTime) → setTimeout(~15s)
+    //                → _disposeIfEmpty() → emit('dispose') → комната удалена
+    //
+    // Решение: переопределить protected resetAutoDisposeTimeout как no-op.
+    // Тогда таймер удаления никогда не ставится, _disposeIfEmpty никогда не вызывается.
+    protected resetAutoDisposeTimeout(_timeoutInSeconds?: number): void {
+        clearTimeout((this as any)._autoDisposeTimeout);
+        (this as any)._autoDisposeTimeout = undefined;
+        // Намеренно не ставим новый setTimeout — комната постоянная.
+    }
 
 
     private office!: Office;
