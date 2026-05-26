@@ -30,6 +30,10 @@ export class ToolExecutor {
                 return this.writeNote(params.content);
             case 'read_file':
                 return this.readFile(params.path);
+            case 'create_task':
+                return { success: true, output: `Task "${params.title}" created for ${params.assignee || 'team'}` };
+            case 'complete_task':
+                return { success: true, output: `Task completed` };
             default:
                 return { success: false, output: '', error: `Unknown tool: ${toolName}` };
         }
