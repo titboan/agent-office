@@ -26,7 +26,11 @@ export class OfficeRoom extends Room<OfficeState> {
     private static activeRoom: OfficeRoom | null = null;
 
     maxClients = 100;
+    // Оба accessor нужны: в JS определение только getter в subclass
+    // полностью стирает setter родителя с прототипа.
+    // Без setter Colyseus не может выставить _autoDispose и комната удаляется.
     get autoDispose() { return false; }
+    set autoDispose(_: boolean) { /* ignore — комната живёт вечно */ }
 
 
     private office!: Office;

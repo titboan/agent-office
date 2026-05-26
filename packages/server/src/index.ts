@@ -90,28 +90,41 @@ const colyseusServer = new Server({
 // Define Rooms
 colyseusServer.define('office', OfficeRoom);
 
+// Глобальный перехват unhandledRejection — не даём процессу упасть из-за
+// ошибок в async-цепочках агентов (вызовы Claude API, SQLite и т.д.)
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[Server] Unhandled rejection (caught, process stays alive):', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('[Server] Uncaught exception (caught, process stays alive):', err);
+});
+
 // Start listening + автозапуск комнаты
 const PORT = Number(process.env.PORT || 3000);
 colyseusServer.listen(PORT).then(async () => {
     console.log(`[Server] AgentOffice Engine listening on ws://localhost:${PORT}`);
 
-    // OfficeRoom.autoDispose = false — комната живёт без клиентов.
-    // matchMaker нужен только для первоначального создания.
     const { matchMaker } = require('colyseus');
 
+    // Флаг предотвращает дублирование: onCreate у 6 агентов занимает >15 сек,
+    // без флага watchdog успевает создать вторую комнату до завершения первой.
+    let creating = false;
+
     const ensureRoom = async () => {
-        if (!OfficeRoom.getActiveRoom()) {
-            try {
-                await matchMaker.createRoom('office', { name: 'Главный офис' });
-                console.log(`[Server] Office room created`);
-            } catch (e) {
-                console.error('[Server] Room creation failed:', e);
-            }
+        if (OfficeRoom.getActiveRoom() || creating) return;
+        creating = true;
+        try {
+            console.log('[Server] Creating office room...');
+            await matchMaker.createRoom('office', { name: 'Главный офис' });
+            console.log('[Server] Office room created');
+        } catch (e) {
+            console.error('[Server] Room creation failed:', e);
+        } finally {
+            creating = false;
         }
     };
 
-    // Создаём сразу после старта, потом watchdog каждые 15 секунд
-    // (страховка на случай непредвиденного dispose при ошибке)
+    // Создаём сразу, потом watchdog каждые 5 секунд
     await ensureRoom();
-    setInterval(ensureRoom, 15_000);
+    setInterval(ensureRoom, 5_000);
 });
