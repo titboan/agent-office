@@ -94,13 +94,20 @@ colyseusServer.define('office', OfficeRoom);
 const PORT = Number(process.env.PORT || 3000);
 colyseusServer.listen(PORT).then(() => {
     console.log(`[Server] AgentOffice Engine listening on ws://localhost:${PORT}`);
-    setTimeout(async () => {
-        try {
-            const { matchMaker } = require('colyseus');
-            await matchMaker.createRoom('office', { name: 'Главный офис' });
-            console.log(`[Server] Office room auto-created`);
-        } catch (e) {
-            console.error('[Server] Auto-create failed:', e);
+    
+    const ensureRoom = async () => {
+        if (!OfficeRoom.getActiveRoom()) {
+            try {
+                const { matchMaker } = require('colyseus');
+                await matchMaker.createRoom('office', { name: 'Главный офис' });
+                console.log(`[Server] Office room created`);
+            } catch (e) {
+                console.error('[Server] Room creation failed:', e);
+            }
         }
-    }, 2000);
+    };
+
+    // Создаём сразу и проверяем каждые 10 секунд
+    setTimeout(ensureRoom, 2000);
+    setInterval(ensureRoom, 10000);
 });
