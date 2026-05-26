@@ -25,8 +25,10 @@ interface RelationshipEdge {
 export class OfficeRoom extends Room<OfficeState> {
     private static activeRoom: OfficeRoom | null = null;
 
-    maxClients = 100;
-    autoDispose = false;
+maxClients = 100;
+
+get autoDispose() { return false; }
+
 
     private office!: Office;
     private demoTickCount = 0;
