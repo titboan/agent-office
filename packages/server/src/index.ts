@@ -2,11 +2,11 @@ import express from 'express';
 import { Server } from 'colyseus';
 import { createServer } from 'http';
 import { OfficeRoom } from './rooms/OfficeRoom';
+import path from 'path';
 
 // Setup Express
 const app = express();
 app.use(express.json());
-import path from 'path';
 
 // Отдаём собранный UI
 app.use(express.static(path.join(__dirname, '../../ui/dist')));
@@ -15,6 +15,7 @@ app.use(express.static(path.join(__dirname, '../../ui/dist')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../ui/dist/index.html'));
 });
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
@@ -51,8 +52,8 @@ app.get('/api/status', (req, res) => {
         return;
     }
     const recap = room.getEpisodeRecap();
-    res.json({ 
-        ok: true, 
+    res.json({
+        ok: true,
         online: true,
         agents: recap.leaderboard.map((a: any) => ({
             name: a.name,
@@ -64,6 +65,21 @@ app.get('/api/status', (req, res) => {
     });
 });
 
+app.post('/api/assign-task', (req, res) => {
+    const room = OfficeRoom.getActiveRoom();
+    if (!room) {
+        res.status(503).json({ ok: false, error: 'No active office room.' });
+        return;
+    }
+    const { title, agentId } = req.body || {};
+    if (!title) {
+        res.status(400).json({ ok: false, error: 'title is required' });
+        return;
+    }
+    // Эмулируем сообщение assign-task
+    (room as any).onMessage('assign-task', null, { title, agentId });
+    res.json({ ok: true, assigned: true });
+});
 
 // Create HTTP and Colyseus server
 const httpServer = createServer(app);
@@ -74,8 +90,14 @@ const colyseusServer = new Server({
 // Define Rooms
 colyseusServer.define('office', OfficeRoom);
 
-// Start listening
+// Start listening + автозапуск комнаты
 const PORT = Number(process.env.PORT || 3000);
-colyseusServer.listen(PORT).then(() => {
+colyseusServer.listen(PORT).then(async () => {
     console.log(`[Server] AgentOffice Engine listening on ws://localhost:${PORT}`);
+    try {
+        const room = await colyseusServer.createRoom('office', { name: 'Главный офис' });
+        console.log(`[Server] Office room created: ${room.roomId}`);
+    } catch (e) {
+        console.error('[Server] Failed to create office room:', e);
+    }
 });
