@@ -76,8 +76,8 @@ app.post('/api/assign-task', (req, res) => {
         res.status(400).json({ ok: false, error: 'title is required' });
         return;
     }
-    // Эмулируем сообщение assign-task
-    (room as any).onMessage('assign-task', null, { title, agentId });
+    // Вызываем публичный метод напрямую (onMessage — регистратор, а не вызов)
+    room.assignTask(title, agentId);
     res.json({ ok: true, assigned: true });
 });
 
@@ -92,13 +92,16 @@ colyseusServer.define('office', OfficeRoom);
 
 // Start listening + автозапуск комнаты
 const PORT = Number(process.env.PORT || 3000);
-colyseusServer.listen(PORT).then(() => {
+colyseusServer.listen(PORT).then(async () => {
     console.log(`[Server] AgentOffice Engine listening on ws://localhost:${PORT}`);
-    
+
+    // OfficeRoom.autoDispose = false — комната живёт без клиентов.
+    // matchMaker нужен только для первоначального создания.
+    const { matchMaker } = require('colyseus');
+
     const ensureRoom = async () => {
         if (!OfficeRoom.getActiveRoom()) {
             try {
-                const { matchMaker } = require('colyseus');
                 await matchMaker.createRoom('office', { name: 'Главный офис' });
                 console.log(`[Server] Office room created`);
             } catch (e) {
@@ -107,7 +110,8 @@ colyseusServer.listen(PORT).then(() => {
         }
     };
 
-    // Создаём сразу и проверяем каждые 10 секунд
-    setTimeout(ensureRoom, 2000);
-    setInterval(ensureRoom, 10000);
+    // Создаём сразу после старта, потом watchdog каждые 15 секунд
+    // (страховка на случай непредвиденного dispose при ошибке)
+    await ensureRoom();
+    setInterval(ensureRoom, 15_000);
 });

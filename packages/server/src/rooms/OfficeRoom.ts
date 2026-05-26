@@ -25,9 +25,8 @@ interface RelationshipEdge {
 export class OfficeRoom extends Room<OfficeState> {
     private static activeRoom: OfficeRoom | null = null;
 
-maxClients = 100;
-
-get autoDispose() { return false; }
+    maxClients = 100;
+    autoDispose = false; // ← Свойство класса, а не геттер: instance property перекрывает this.autoDispose=true из базового Room
 
 
     private office!: Office;
@@ -803,23 +802,14 @@ get autoDispose() { return false; }
     }
 
     async onDispose() {
-    console.log("room", this.roomId, "disposing... saving memories");
-    OfficeRoom.activeRoom = null;
-    for (const [id, agent] of this.coreAgents) {
-        await this.memoryStore.saveMemories(id, agent.memories, this.sessionId);
-    }
-    await this.memoryStore.close();
-    // Пересоздаём комнату через 3 секунды
-    setTimeout(async () => {
-        try {
-            const { matchMaker } = require('colyseus');
-            await matchMaker.createRoom('office', { name: 'Главный офис' });
-            console.log(`[Server] Office room recreated after dispose`);
-        } catch (e) {
-                    console.error('[Server] Recreate failed:', e);
-                }
-            }, 3000);
+        // Вызывается только при остановке сервера (autoDispose = false исключает удаление при выходе клиентов)
+        console.log("room", this.roomId, "disposing... saving memories");
+        OfficeRoom.activeRoom = null;
+        for (const [id, agent] of this.coreAgents) {
+            await this.memoryStore.saveMemories(id, agent.memories, this.sessionId);
         }
+        await this.memoryStore.close();
+    }
 
 
     public assignTask(title: string, agentId?: string) {
