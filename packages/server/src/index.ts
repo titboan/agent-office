@@ -44,6 +44,27 @@ app.get('/api/episode-recap', (req, res) => {
     res.json({ ok: true, recap: room.getEpisodeRecap() });
 });
 
+app.get('/api/status', (req, res) => {
+    const room = OfficeRoom.getActiveRoom();
+    if (!room) {
+        res.json({ ok: true, online: false, agents: [] });
+        return;
+    }
+    const recap = room.getEpisodeRecap();
+    res.json({ 
+        ok: true, 
+        online: true,
+        agents: recap.leaderboard.map((a: any) => ({
+            name: a.name,
+            action: a.action,
+            mood: Math.round(a.mood * 100),
+            momentum: Math.round(a.momentum * 100),
+            task: a.currentTask || null
+        }))
+    });
+});
+
+
 // Create HTTP and Colyseus server
 const httpServer = createServer(app);
 const colyseusServer = new Server({
