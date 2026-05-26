@@ -92,12 +92,15 @@ colyseusServer.define('office', OfficeRoom);
 
 // Start listening + автозапуск комнаты
 const PORT = Number(process.env.PORT || 3000);
-colyseusServer.listen(PORT).then(async () => {
+colyseusServer.listen(PORT).then(() => {
     console.log(`[Server] AgentOffice Engine listening on ws://localhost:${PORT}`);
-    try {
-        const room = await colyseusServer.createRoom('office', { name: 'Главный офис' });
-        console.log(`[Server] Office room created: ${room.roomId}`);
-    } catch (e) {
-        console.error('[Server] Failed to create office room:', e);
-    }
+    setTimeout(async () => {
+        try {
+            const { matchMaker } = require('colyseus');
+            await matchMaker.createRoom('office', { name: 'Главный офис' });
+            console.log(`[Server] Office room auto-created`);
+        } catch (e) {
+            console.error('[Server] Auto-create failed:', e);
+        }
+    }, 2000);
 });
