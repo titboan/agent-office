@@ -803,14 +803,14 @@ get autoDispose() { return false; }
     }
 
     async onDispose() {
-        console.log("room", this.roomId, "disposing... saving memories");
-        OfficeRoom.activeRoom = null;
-        // Persist all agent memories on shutdown
-        for (const [id, agent] of this.coreAgents) {
-            await this.memoryStore.saveMemories(id, agent.memories, this.sessionId);
-        }
-        await this.memoryStore.close();
+    console.log("room", this.roomId, "disposing... saving memories");
+    // Не удаляем activeRoom — пересоздаём при необходимости
+    for (const [id, agent] of this.coreAgents) {
+        await this.memoryStore.saveMemories(id, agent.memories, this.sessionId);
+       }
+    await this.memoryStore.close();
     }
+
     public assignTask(title: string, agentId?: string) {
         const targetId = agentId || this.autoAssignAgent();
         const agent = this.coreAgents.get(targetId);
