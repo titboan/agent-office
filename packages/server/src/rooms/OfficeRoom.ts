@@ -26,6 +26,8 @@ export class OfficeRoom extends Room<OfficeState> {
     private static activeRoom: OfficeRoom | null = null;
 
     maxClients = 100;
+    autoDispose = false;
+
     private office!: Office;
     private demoTickCount = 0;
     private coreAgents: Map<string, Agent> = new Map();
@@ -806,5 +808,41 @@ export class OfficeRoom extends Room<OfficeState> {
             await this.memoryStore.saveMemories(id, agent.memories, this.sessionId);
         }
         await this.memoryStore.close();
+    }
+    public assignTask(title: string, agentId?: string) {
+        const targetId = agentId || this.autoAssignAgent();
+        const agent = this.coreAgents.get(targetId);
+        const agentState = this.state.agents.get(targetId);
+
+        if (agent && agentState) {
+            agent.currentTask = title;
+            agentState.currentTask = title;
+            agentState.action = 'work';
+
+            this.memoryStore.createTask(title, targetId);
+
+            this.broadcast('chat', {
+                sender: 'System',
+                text: `📋 Task "${title}" assigned to ${agentState.name}`
+            });
+
+            agent.think({
+                time: this.state.officeTime,
+                location: `${agentState.x},${agentState.y}`,
+                nearbyAgents: [],
+                currentTask: title,
+                recentMessages: [],
+                memories: agent.getRecentMemories(3)
+            }).then(async (decision) => {
+                agentState.thought = decision.thought || '';
+                agentState.action = decision.action;
+                 if (decision.message) {
+                    this.broadcast('chat', {
+                        sender: agentState.name,
+                        text: decision.message
+                    });
+                }
+            }).catch(err => console.error(`assignTask think error:`, err));
+        }
     }
 }
